@@ -1,30 +1,64 @@
-def generate_react_component(ui_schema) : 
-    component_name = ui_schema["componentName"]
+def style_dict_to_inline(style: dict):
+    if not style:
+        return "{{}}"
+
+    style_string = ", ".join([f'{k}: "{v}"' for k, v in style.items()])
+    return "{{ " + style_string + " }}"
+
+
+def generate_react_component(ui_schema):
+
+    component_name = ui_schema.get("componentName", "GeneratedComponent")
+    layout = ui_schema.get("layout", "vertical")
+    elements = ui_schema.get("elements", [])
+    container_style = ui_schema.get("styles", {})
 
     jsx_elements = []
 
-    for element in ui_schema["elements"]:
-        if element["type"] == "image":
+    for element in elements:
+
+        el_type = element.get("type")
+        style = element.get("style", {})
+
+        if el_type == "image":
             jsx_elements.append(
-                '<img src="/placeholder.png" className="w-full rounded-lg" />'
+                f'<img src="{element.get("src", "https://via.placeholder.com/300")}" '
+                f'style={style_dict_to_inline(style)} />'
             )
 
-        if element["type"] == "text":
+        elif el_type == "text":
             jsx_elements.append(
-                '<p className="text-lg font-semibold">Sample Text</p>'
+                f'<p style={style_dict_to_inline(style)}>{element.get("content", "Text")}</p>'
             )
 
-        if element["type"] == "button":
+        elif el_type == "button":
             jsx_elements.append(
-                '<button className="px-4 py-2 bg-black text-white rounded-lg">Click</button>'
+                f'<button style={style_dict_to_inline(style)}>'
+                f'{element.get("content", "Click")}</button>'
             )
+
+    # Layout logic
+    if layout == "horizontal":
+        layout_style = {
+            "display": "flex",
+            "gap": "16px",
+            "alignItems": "center"
+        }
+    else:
+        layout_style = {
+            "display": "flex",
+            "flexDirection": "column",
+            "gap": "12px"
+        }
+
+    final_container_style = {**container_style, **layout_style}
 
     jsx_body = "\n".join(jsx_elements)
 
     return f"""
 export default function {component_name}() {{
   return (
-    <div className="p-4 rounded-xl shadow-lg bg-white space-y-3">
+    <div style={style_dict_to_inline(final_container_style)}>
       {jsx_body}
     </div>
   );

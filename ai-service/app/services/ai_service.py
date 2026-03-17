@@ -3,16 +3,30 @@ import re
 from app.services.llm_provider import generate_llm_response
 
 
-def generate_ui_structure(prompt: str) -> dict:
-    """
-    Generates a UI schema JSON from a natural language prompt
-    using an LLM.
-    """
+def extract_json(response: str):
+    cleaned = response.replace("```json", "").replace("```", "").strip()
+
+    match = re.search(r"\{.*\}", cleaned, re.DOTALL)
+
+    if not match:
+        raise ValueError("No valid JSON found")
+
+    return json.loads(match.group())
+
+
+def generate_ui_structure(prompt: str):
 
     system_prompt = """
-You are an expert UI architect.
+You are a senior UI/UX engineer.
 
-Convert the user prompt into a JSON UI schema.
+Generate a modern, clean, visually appealing UI component schema.
+
+Rules:
+- Use good spacing and layout
+- Use realistic UI patterns
+- Avoid generic placeholder design
+- Use inline styles (NO Tailwind)
+- Make it visually balanced
 
 Schema format:
 
@@ -20,41 +34,30 @@ Schema format:
   "componentName": "",
   "layout": "vertical | horizontal",
   "elements": [
-    {"type": "image"},
-    {"type": "text"},
-    {"type": "button"}
+    {
+      "type": "image",
+      "src": "",
+      "style": {}
+    },
+    {
+      "type": "text",
+      "content": "",
+      "style": {}
+    },
+    {
+      "type": "button",
+      "content": "",
+      "style": {}
+    }
   ],
-  "styles": {
-    "padding": "",
-    "borderRadius": "",
-    "shadow": true
-  }
+  "styles": {}
 }
 
-Return ONLY valid JSON. Do not include explanations.
+Return ONLY JSON.
 """
 
-    # Call LLM
     response = generate_llm_response(system_prompt, prompt)
 
-    print("RAW LLM RESPONSE:", response)
+    print("LLM RESPONSE:", response)
 
-    try:
-        # Remove markdown code blocks like ```json
-        cleaned = response.replace("```json", "").replace("```", "").strip()
-
-        # Extract JSON object safely
-        match = re.search(r"\{.*\}", cleaned, re.DOTALL)
-
-        if not match:
-            raise ValueError("No valid JSON found in LLM response")
-
-        json_str = match.group()
-
-        # Convert JSON string → Python dictionary
-        parsed_json = json.loads(json_str)
-
-        return parsed_json
-
-    except json.JSONDecodeError as e:
-        raise ValueError(f"Invalid JSON returned by LLM: {e}")
+    return extract_json(response)

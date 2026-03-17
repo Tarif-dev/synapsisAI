@@ -19,11 +19,8 @@ export default function Home() {
 
   return (
     <div className="p-6 space-y-6">
-
       {/* Header */}
-      <h1 className="text-3xl font-bold">
-        Synapsis AI
-      </h1>
+      <h1 className="text-3xl font-bold">Synapsis AI</h1>
 
       {/* Prompt Bar */}
       <div className="flex gap-2">
@@ -38,21 +35,22 @@ export default function Home() {
           onClick={handleGenerate}
           className="px-4 py-2 bg-black text-white rounded-lg"
         >
-          {loading ? "Generating..." : "Generate"}
+          {loading ? "⚡ Generating..." : "Generate"}
         </button>
       </div>
 
       {/* Workspace */}
-      <div className="grid grid-cols-2 gap-4">
-
+      <div className="grid grid-cols-2 gap-6 h-150">
         {/* Code Editor */}
-        <CodeEditor code={code} setCode={setCode} />
+        <div className="bg-[#0d1117] rounded-xl p-2 border border-gray-800">
+          <CodeEditor code={code} setCode={setCode} />
+        </div>
 
         {/* Live Preview */}
-        <ComponentPreview code={code} />
-
+        <div className="bg-[#0d1117] rounded-xl p-2 border border-gray-800">
+          <ComponentPreview code={code} />
+        </div>
       </div>
-
     </div>
   );
 }
